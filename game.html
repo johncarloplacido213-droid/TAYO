@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accounting Quiz Game</title>
+
+<style>
+    body {
+        font-family: Arial;
+        text-align: center;
+        background: linear-gradient(to right, #667eea, #764ba2);
+    }
+
+    .container {
+        width: 450px;
+        margin: auto;
+        margin-top: 40px;
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 0 15px black;
+        transition: 0.3s;
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        margin: 5px;
+        border: none;
+        border-radius: 8px;
+        background: #6c5ce7;
+        color: white;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    button:hover {
+        background: #4834d4;
+    }
+
+    #leaderboard {
+        margin-top: 15px;
+        text-align: left;
+        background: #f1f1f1;
+        padding: 10px;
+        border-radius: 10px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container" id="box">
+    <h2 id="question">Loading...</h2>
+    <p id="score">Score: 0</p>
+    <p id="timer">Time: 30</p>
+
+    <div id="choices"></div>
+
+    <div id="leaderboard">
+        <h3>🏆 Top 50 Leaderboard</h3>
+        <ul id="list"></ul>
+    </div>
+</div>
+
+<script>
+let name = prompt("Enter your name:");
+let difficulty = prompt("Choose difficulty: Easy / Medium / Hard", "Easy");
+
+let questions = [
+{q:"What financial statement shows a company’s financial position at a specific date?",c:["Income Statement","Balance Sheet","Cash Flow","Journal"],a:"Balance Sheet"},
+{q:"Which financial statement reports revenues and expenses?",c:["Balance Sheet","Income Statement","Ledger","Trial Balance"],a:"Income Statement"},
+{q:"What are the three main financial statements?",c:["IS, BS, CF","Assets, Liabilities, Equity","Debit, Credit, Balance","None"],a:"IS, BS, CF"},
+{q:"Which statement shows cash inflows and outflows?",c:["Income Statement","Cash Flow","Balance Sheet","Journal"],a:"Cash Flow"},
+{q:"Financial statements are mainly used by whom?",c:["Users","Gamers","Drivers","Teachers"],a:"Users"},
+
+{q:"What is the formula used in an income statement?",c:["A=L+E","Revenue-Expenses","Assets-Equity","None"],a:"Revenue-Expenses"},
+{q:"Which comes first in an income statement?",c:["Expenses","Revenue","Assets","Liabilities"],a:"Revenue"},
+
+{q:"What is the accounting equation?",c:["A=L+E","R-E","A-E","L+A"],a:"A=L+E"},
+{q:"What are the two sections aside from assets?",c:["Revenue & Expense","Liabilities & Equity","Cash & Bank","None"],a:"Liabilities & Equity"},
+
+{q:"Resources owned by a business are called?",c:["Liabilities","Assets","Equity","Expenses"],a:"Assets"},
+{q:"Example of current asset?",c:["Cash","Building","Loan","Capital"],a:"Cash"},
+
+{q:"Obligations or debts are called?",c:["Assets","Liabilities","Equity","Revenue"],a:"Liabilities"},
+{q:"Example of liability?",c:["Cash","Accounts Payable","Equipment","Sales"],a:"Accounts Payable"},
+
+{q:"Owner’s claim is called?",c:["Asset","Liability","Equity","Revenue"],a:"Equity"},
+{q:"Which increases owner’s equity?",c:["Expenses","Revenue","Loss","None"],a:"Revenue"},
+
+{q:"Income earned is called?",c:["Expense","Revenue","Asset","Liability"],a:"Revenue"},
+{q:"Costs incurred are called?",c:["Revenue","Expense","Asset","Equity"],a:"Expense"},
+
+{q:"Revenue > Expenses = ?",c:["Loss","Net Income","Debt","None"],a:"Net Income"},
+
+{q:"First record in accounting books?",c:["Journal Entry","Ledger","Trial Balance","Report"],a:"Journal Entry"},
+{q:"Two sides of journal entry?",c:["Up/Down","Left/Right","Debit/Credit","In/Out"],a:"Debit/Credit"}
+];
+
+let score=0,index=0,time=30,timer;
+
+function getTime(){
+    if(difficulty==="Hard") return 5;
+    if(difficulty==="Medium") return 20;
+    return 30;
+}
+
+function load(){
+    if(index>=questions.length){end();return;}
+
+    document.getElementById("question").innerText=questions[index].q;
+
+    let choicesHTML="";
+    questions[index].c.forEach(c=>{
+        choicesHTML+=`<button onclick="check('${c}')">${c}</button>`;
+    });
+    document.getElementById("choices").innerHTML=choicesHTML;
+
+    time=getTime();
+    document.getElementById("timer").innerText="Time: "+time;
+}
+
+function check(ans){
+    let box=document.getElementById("box");
+
+    if(ans===questions[index].a){
+        score++;
+        box.style.background="#c8f7c5";
+        correctSound();
+    }else{
+        box.style.background="#f7c5c5";
+        wrongSound();
+    }
+
+    setTimeout(()=>{box.style.background="white";},300);
+
+    document.getElementById("score").innerText="Score: "+score;
+    index++;
+    load();
+}
+
+function startTimer(){
+    timer=setInterval(()=>{
+        time--;
+        document.getElementById("timer").innerText="Time: "+time;
+
+        if(time<=0){
+            index++;
+            load();
+        }
+    },1000);
+}
+
+function end(){
+    clearInterval(timer);
+    save();
+    update();
+    alert("Game Over!\n"+name+" Score: "+score);
+}
+
+function save(){
+    let s=JSON.parse(localStorage.getItem("quiz"))||[];
+    s.push({name,score});
+    s.sort((a,b)=>b.score-a.score);
+    localStorage.setItem("quiz",JSON.stringify(s));
+}
+
+function update(){
+    let s=JSON.parse(localStorage.getItem("quiz"))||[];
+    let list=document.getElementById("list");
+    list.innerHTML="";
+    s.slice(0,5).forEach((x,i)=>{
+        let li=document.createElement("li");
+        li.textContent=`${i+1}. ${x.name} - ${x.score}`;
+        list.appendChild(li);
+    });
+
+// start
+update();
+load();
+startTimer();
+</script>
+
+</body>
+</html>
